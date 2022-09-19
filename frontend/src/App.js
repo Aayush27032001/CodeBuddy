@@ -21,8 +21,7 @@ function App() {
    }
    if(res.ok){
       setResults(res.data)
-    setLoading(false)
-
+      setLoading(false)
    }
    else{
     setLoading(false)
