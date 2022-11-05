@@ -3,29 +3,21 @@ const mongoose = require('mongoose');
 const questionSchema = mongoose.Schema({
     name:{
         type: String,
-        required: true,
+        required: [true, "Question Name is required"],
         unique: true,
     },
     statement:{
         type: String,
-        required: true,
+        required: [true, "Question Statement is required"],
     },
-    sampleInput: {
-        type: [String],
-        required: true,
+    constraints: {
+        type: String,
+        required: [true, "Constraints are required"],
     },
-    sampleOutput: {
-        type: [String],
-        required: true,
-    },
-    hiddenInput: {
-        type: [String],
-        required: true,
-    },
-    hiddenOutput: {
-        type: [String],
-        required: true,
-    },
+    testcases: [{
+        input: [String],
+        output: [String],
+    }],
     date:{
         type: Date,
         default: Date.now(),
