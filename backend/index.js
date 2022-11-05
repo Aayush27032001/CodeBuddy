@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+const questionRouter = require('./routes/questionRoutes');
 
 const app = express();
-const port = 5000;
+
+// midleware
 app.use(cors());
 app.use(express.json());
 
@@ -32,6 +34,7 @@ app.post('/js',(req,res)=>{
     }
 })
 
-app.listen(port, () => {
-  console.log(`Server is Up at ${port}`)
-})
+// Routes
+app.use('/api/questions', questionRouter);
+
+module.exports = app;
