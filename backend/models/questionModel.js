@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
-const questionSchema = mongoose.Schema({
-    name:{
+const questionSchema = new mongoose.Schema({
+    name: {
         type: String,
         required: [true, "Question Name is required"],
         unique: true,
     },
-    statement:{
+    statement: {
         type: String,
         required: [true, "Question Statement is required"],
     },
@@ -18,11 +18,11 @@ const questionSchema = mongoose.Schema({
         input: [String],
         output: [String],
     }],
-    date:{
+    date: {
         type: Date,
         default: Date.now(),
     }
 });
 
-const Question =mongoose.model('Question', questionSchema);
+const Question = mongoose.model('Question', questionSchema);
 module.exports = Question;
