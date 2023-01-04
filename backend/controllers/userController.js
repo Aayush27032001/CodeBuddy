@@ -30,7 +30,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createTest = catchAsync(async (req, res, next) => {
+exports.createUser = catchAsync(async (req, res, next) => {
   const newUser = await User.create(req.body);
 
   res.status(201).json({
@@ -42,7 +42,7 @@ exports.createTest = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateTest = catchAsync(async (req, res, next) => {
+exports.updateUser = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
@@ -61,7 +61,7 @@ exports.updateTest = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.deleteTest = catchAsync(async (req, res, next) => {
+exports.deleteUser = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndDelete(req.params.id);
 
   if (!user) {
