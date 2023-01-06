@@ -1,18 +1,42 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSantize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
 const cookieParser = require('cookie-parser');
 const questionRouter = require('./routes/questionRoutes');
 const testRouter = require('./routes/testRoutes');
 const resultRouter = require('./routes/resultRoutes');
+const userRouter = require('./routes/userRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
 const app = express();
 
-// midleware
+// Global midlewares
 app.use(cors());
+
+// Set security HTTP headers
+app.use(helmet());
+
+// Limit requests from same IP
+const limiter = rateLimit({
+  max: 1000,
+  WindowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP. Please try again in an hour!',
+});
+app.use('/api', limiter);
+
 app.use(express.json());
+
+// Data sanitize against NoSQL query injection attacks
+app.use(mongoSantize());
+
+//Data sanitize against xss
+app.use(xss());
+
 app.use(cookieParser());
 
 // routes
@@ -48,6 +72,7 @@ app.post('/js', (req, res) => {
 app.use('/api/questions', questionRouter);
 app.use('/test', testRouter);
 app.use('/result', resultRouter);
+app.use('/users', userRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

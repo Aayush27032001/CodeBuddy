@@ -1,24 +1,37 @@
 const express = require('express');
 const router = express.Router();
-const {
-  getAllTests,
-  getTest,
-  createTest,
-  updateTest,
-  deleteTest,
-} = require('../controllers/testController');
+const testController = require('../controllers/testController');
+const authController = require('../controllers/authController');
 
-// prettier-ignore
-router
-.route('/')
-.get(getAllTests)
-.post(createTest);
+router.patch(
+  '/updateMyTest/:testID',
+  authController.protect,
+  testController.updateMyTest
+);
 
-// prettier-ignore
+router.delete(
+  '/deleteMyTest/:testID',
+  authController.protect,
+  testController.deleteMyTest
+);
+
 router
-.route('/:id')
-.get(getTest)
-.patch(updateTest)
-.delete(deleteTest);
+  .route('/')
+  .get(authController.protect, testController.getAllTests)
+  .post(authController.protect, testController.createTest);
+
+router
+  .route('/:id')
+  .get(authController.protect, testController.getTest)
+  .patch(
+    authController.protect,
+    authController.restrictTo('admin'),
+    testController.updateTest
+  )
+  .delete(
+    authController.protect,
+    authController.restrictTo('admin'),
+    testController.deleteTest
+  );
 
 module.exports = router;

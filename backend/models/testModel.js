@@ -80,10 +80,25 @@ const testSchema = mongoose.Schema({
       required: [true, 'Please enter test end time'],
     },
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Please enter user id'],
+  },
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
   },
+});
+
+testSchema.pre(/^find/, function (next) {
+  this.find({ active: true });
+  next();
 });
 
 const Test = mongoose.model('Test', testSchema);
