@@ -2,7 +2,7 @@ const AppError = require('../utils/appError');
 
 const handleDuplicateFieldsDB = (err) => {
   const value = Object.values(err.keyValue)[0];
-  console.log(value);
+  // console.log(value);
   const message = `Duplicate field value: ${value}. Please use another value `;
   return new AppError(message, 400);
 };
@@ -36,13 +36,17 @@ const sendErrorDev = (err, res) => {
 };
 
 const sendErrorProd = (err, res) => {
+  // Operational, trusted error: send messages to client
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
       message: err.message,
     });
-  } else {
+  } // Programming or other unknown errors: dont leak details to client
+  else {
+    // log error
     console.log('Error 💥', err);
+    // Send generic message
 
     res.status(500).json({
       status: 'error',
@@ -52,6 +56,8 @@ const sendErrorProd = (err, res) => {
 };
 
 module.exports = (err, req, res, next) => {
+  // console.log(err);
+
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
@@ -72,7 +78,7 @@ module.exports = (err, req, res, next) => {
     if (error.name === 'JsonWebTokenError') {
       error = handleJWTError();
     }
-    if (error.name === 'JsonWebTokenError') {
+    if (error.name === 'TokenExpiredError') {
       error = handleJWTExpiredError();
     }
 

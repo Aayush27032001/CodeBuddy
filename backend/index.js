@@ -70,8 +70,8 @@ app.post('/js', (req, res) => {
 });
 
 app.use('/api/questions', questionRouter);
-app.use('/test', testRouter);
-app.use('/result', resultRouter);
+app.use('/tests', testRouter);
+app.use('/results', resultRouter);
 app.use('/users', userRouter);
 
 app.all('*', (req, res, next) => {
