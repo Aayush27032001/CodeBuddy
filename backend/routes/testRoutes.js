@@ -22,7 +22,7 @@ router
 
 router
   .route('/:id')
-  .get(authController.protect, testController.getTest)
+  .get(testController.getTest)
   .patch(
     authController.protect,
     authController.restrictTo('admin'),
@@ -33,5 +33,9 @@ router
     authController.restrictTo('admin'),
     testController.deleteTest
   );
+
+router.route('/startTest/:id').get(testController.startTest);
+
+router.route('/submit/:id').patch(testController.submitTest);
 
 module.exports = router;
