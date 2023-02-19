@@ -9,7 +9,7 @@ const resultSchema = new mongoose.Schema({
   },
   testKey: {
     type: String,
-    required: [true, 'Please enter the test key'],
+    required: [true, 'Please enter test key'],
     unique: true,
   },
   candidate: {
@@ -22,7 +22,6 @@ const resultSchema = new mongoose.Schema({
         email: {
           type: String,
           required: [true, "Please enter candidate's email"],
-          unique: true,
         },
         score: {
           type: Number,
