@@ -1,4 +1,5 @@
 const short = require('short-uuid');
+const Result = require('../models/resultModel');
 const Test = require('../models/testModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
@@ -43,16 +44,59 @@ exports.getTest = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.startTest = catchAsync(async (req, res, next) => {
+  const test = await Test.findById(req.params.id);
+  const { start, end } = test.duration;
+
+  const startTime = parseInt(start.getTime() / 1000, 10);
+  const endTime = parseInt(end.getTime() / 1000, 10);
+
+  const currentTime = parseInt(Date.now() / 1000, 10);
+
+  if (currentTime < startTime || currentTime >= endTime) {
+    let message =
+      currentTime < startTime ? `Test has not started yet!` : `Test is over!`;
+
+    return res.status(400).json({
+      status: 'success',
+      message,
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Test started successfully',
+    data: {
+      test,
+    },
+  });
+});
+
+exports.submitTest = catchAsync(async (req, res, next) => {
+  const result = await Result.updateOne(
+    { testID: req.params.id, 'candidate.email': { $nin: [req.body.email] } },
+    { $push: { candidate: req.body } }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    message: 'result added successfully',
+    data: {
+      result,
+    },
+  });
+});
+
 exports.createTest = catchAsync(async (req, res, next) => {
   const testObj = req.body;
   const key = short.generate();
-  const testUrl = `http://localhost:8000/AuthenticateKey?id=${key}`;
   testObj.key = key;
-  testObj.testUrl = testUrl;
   testObj.createdBy = req.user.id;
 
   const newTest = await Test.create(testObj);
   newTest.active = undefined;
+
+  await Result.create({ testID: newTest._id, testKey: key });
 
   res.status(201).json({
     status: 'success',

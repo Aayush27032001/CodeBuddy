@@ -38,6 +38,11 @@ exports.createResult = catchAsync(async (req, res, next) => {
     return next(new AppError('No test found with that ID', 404));
   }
 
+  const result = await Result.findOne({ testID: test._id });
+  if (result) {
+    return next(new AppError('Result of this test already exist', 400));
+  }
+
   const newResult = await Result.create(req.body);
 
   res.status(201).json({
