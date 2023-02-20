@@ -22,7 +22,9 @@ router
 
 router
   .route('/:id')
-  .get(testController.getTest)
+  .get((req, res, next) => {
+    next();
+  }, testController.getTest)
   .patch(
     authController.protect,
     authController.restrictTo('admin'),

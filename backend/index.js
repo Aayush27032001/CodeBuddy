@@ -12,6 +12,7 @@ const resultRouter = require('./routes/resultRoutes');
 const userRouter = require('./routes/userRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
+const Test = require('./models/testModel');
 
 const app = express();
 
@@ -20,6 +21,16 @@ app.use(cors());
 
 // Set security HTTP headers
 app.use(helmet());
+
+function makeid(length) {
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  let charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
 
 // Limit requests from same IP
 const limiter = rateLimit({
@@ -44,29 +55,39 @@ app.get('/', (req, res) => {
   res.status(200).send('Hello Server is Up and fine!');
 });
 
-app.post('/js', (req, res) => {
+app.post('/js', async (req, res) => {
   // console.log(req.body);
-  fs.writeFileSync('./JSCodes/Code.js', req.body.code);
-  try {
-    const func = require('./JSCodes/Code');
-    // console.log(func);
-    const testCase = [[1, 2, 3, 4, 5], [9, 9, 55, 1, 4], [], [1]];
-    const CorrectResults = [15, 78, 0, 1];
-    const userResults = CorrectResults.map((e, i) => {
-      if (func(testCase[i]) === e) return true;
-      return false;
-    });
-    // fs.unlinkSync("./JSCodes/Code.js")
-    res.status(200).json({
-      message: 'Evaluation Done!',
-      data: userResults,
-    });
-  } catch (e) {
-    // fs.unlinkSync("./JSCodes/Code.js")
-    res.status(500).json({
-      message: 'Time Limit Exced or Code having syntax error',
-    });
-  }
+  const id = makeid(20);
+  fs.writeFile(`./JSCodes/${id}.js`, req.body.code, async (err) => {
+    try {
+      const test = await Test.findById(req.body.testId);
+      const func = require(`./JSCodes/${id}`);
+      const testCase = test.Question.find((ele) => {
+        return ele._id.toHexString() === req.body.questionId;
+      }).testcases.reduce((t, c) => {
+        return [...t, c.input];
+      }, []);
+      const CorrectResults = test.Question.find((ele) => {
+        return ele._id.toHexString() === req.body.questionId;
+      }).testcases.reduce((t, c) => {
+        return [...t, c.output];
+      }, []);
+      const userResults = CorrectResults.map((e, i) => {
+        if (func(testCase[i]) == e) return true;
+        return false;
+      });
+      fs.unlink(`./JSCodes/${id}.js`, () => {});
+      res.status(200).json({
+        message: 'Evaluation Done!',
+        data: userResults,
+      });
+    } catch (e) {
+      fs.unlink(`./JSCodes/${id}.js`, () => {});
+      res.status(500).json({
+        message: 'Time Limit Exced or Code having syntax error',
+      });
+    }
+  });
 });
 
 app.use('/api/questions', questionRouter);
