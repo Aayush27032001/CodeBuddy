@@ -4,22 +4,17 @@ import { javascript, esLint } from "@codemirror/lang-javascript";
 import { post } from "../../utils/request";
 import { lintGutter, linter } from "@codemirror/lint";
 import Linter from "eslint4b-prebuilt";
+import { Box, Button } from "@mui/material";
 const esLintConfigs = {
   env: { es6: true },
   rules: { "no-unused-vars": "off" },
 };
 const CodeEditor = ({ question }) => {
   const [code, setCode] = useState(
-    "module.exports = function(arr) {\n  //Your code goes here\n\n}"
+    "module.exports = function(input) {\n  //Your code goes here\n\n}"
   );
   const [loading, setLoading] = useState(false);
-  const [testCase, setTestCase] = useState([
-    [1, 2, 3, 4, 5],
-    [9, 9, 55, 1, 4],
-    [],
-  ]);
   const [results, setResults] = useState([]);
-  const solution = [15, 78, 0];
   const submitHandler = async () => {
     setLoading(true);
     const res = await post("js", {
@@ -43,19 +38,19 @@ const CodeEditor = ({ question }) => {
   };
 
   useEffect(() => {
-    window.onkeydown = (e) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-      }
-      console.log(e);
-    };
-  }, []);
+    if (localStorage.getItem(question?._id)) {
+      setCode(localStorage.getItem(question?._id));
+    }
+  }, [question?._id]);
+  useEffect(() => {
+    localStorage.setItem(question?._id, code);
+  }, [code, question?._id]);
 
   return (
-    <div>
+    <div style={{ position: "relative", height: "100%" }}>
       <ReactCodeMirror
         value={code}
-        theme="dark"
+        theme="light"
         height="65vh"
         extensions={[
           javascript(),
@@ -77,9 +72,25 @@ const CodeEditor = ({ question }) => {
             );
           })}
       </div>
-      <button onClick={submitHandler} disabled={loading}>
-        Submit
-      </button>
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: 0,
+          width: "100%",
+          background: "#f5f5f5",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Button
+          onClick={submitHandler}
+          disabled={loading}
+          variant="contained"
+          color="error"
+        >
+          Run Test
+        </Button>
+      </Box>
     </div>
   );
 };

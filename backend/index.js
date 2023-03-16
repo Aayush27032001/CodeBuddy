@@ -56,7 +56,6 @@ app.get('/', (req, res) => {
 });
 
 app.post('/js', async (req, res) => {
-  // console.log(req.body);
   const id = makeid(20);
   fs.writeFile(`./JSCodes/${id}.js`, req.body.code, async (err) => {
     try {
