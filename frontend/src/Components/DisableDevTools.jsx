@@ -35,13 +35,12 @@ const DisableDevTools = ({ children }) => {
     });
 
     // Check for devtools
-    const devtoolsOpen = () => {
-      const devtools = window.open("", "_blank");
-      devtools.focus();
-      devtools.close();
-      return true;
-    };
-  }, []);
+    return ()=>{
+      document.onkeydown = "";
+      document.oncontextmenu = "";
+      document.removeEventListener("mousedown",()=>{});
+    }
+  },[]);
 
   return <>{children}</>;
 };
