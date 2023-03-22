@@ -83,7 +83,7 @@ app.post('/js', async (req, res) => {
     } catch (e) {
       fs.unlink(`./JSCodes/${id}.js`, () => {});
       res.status(500).json({
-        message: 'Time Limit Exced or Code having syntax error',
+        message: 'Time Limit Exced or Code having syntax error '+e,
       });
     }
   });
