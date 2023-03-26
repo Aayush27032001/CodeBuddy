@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const { Double } = require('mongodb');
+require('mongoose-double')(mongoose);
 
 const resultSchema = new mongoose.Schema({
   testID: {
@@ -12,6 +14,11 @@ const resultSchema = new mongoose.Schema({
     required: [true, 'Please enter test key'],
     unique: true,
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Please enter the user ID'],
+  },
   candidate: {
     type: [
       {
@@ -24,8 +31,8 @@ const resultSchema = new mongoose.Schema({
           required: [true, "Please enter candidate's email"],
         },
         score: {
-          type: Number,
-          default: 0,
+          type: Double,
+          default: 0.0,
         },
       },
     ],
@@ -36,6 +43,7 @@ const resultSchema = new mongoose.Schema({
       },
       message: 'Please enter valid candidate details',
     },
+    usePushEach: true,
   },
 });
 

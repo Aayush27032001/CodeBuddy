@@ -9,7 +9,9 @@ const filterObj = (obj, ...allowedFields) => {
 
   Object.keys(obj).forEach((el) => {
     if (allowedFields.includes(el)) {
-      newObj[el] = obj[el];
+      if (el === 'score') {
+        newObj[el] = parseFloat(obj[el]);
+      } else newObj[el] = obj[el];
     }
   });
 
@@ -73,9 +75,21 @@ exports.startTest = catchAsync(async (req, res, next) => {
 });
 
 exports.submitTest = catchAsync(async (req, res, next) => {
+  const restultObj = filterObj(req.body, 'name', 'email', 'score');
+  // console.log(restultObj);
+
+  const candidate = await Result.findOne({
+    testID: req.params.id,
+    'candidate.email': restultObj.email,
+  });
+
+  if (candidate) {
+    return next(new AppError('You have already submitted the test', 400));
+  }
+
   const result = await Result.updateOne(
-    { testID: req.params.id, 'candidate.email': { $nin: [req.body.email] } },
-    { $push: { candidate: req.body } }
+    { testID: req.params.id },
+    { $push: { candidate: restultObj } }
   );
 
   res.status(200).json({
@@ -96,7 +110,11 @@ exports.createTest = catchAsync(async (req, res, next) => {
   const newTest = await Test.create(testObj);
   newTest.active = undefined;
 
-  await Result.create({ testID: newTest._id, testKey: key });
+  await Result.create({
+    testID: newTest._id,
+    testKey: key,
+    createdBy: req.user.id,
+  });
 
   res.status(201).json({
     status: 'success',
