@@ -3,9 +3,25 @@ const router = express.Router();
 const resultController = require('../controllers/resultController');
 const authController = require('../controllers/authController');
 
+router.get(
+  '/myResults',
+  authController.protect,
+  resultController.getAllMyResults
+);
+
+router.get(
+  '/myResults/:id',
+  authController.protect,
+  resultController.getMyResult
+);
+
 router
   .route('/')
-  .get(authController.protect, resultController.getAllResults)
+  .get(
+    authController.protect,
+    authController.restrictTo('admin'),
+    resultController.getAllResults
+  )
   .post(authController.protect, resultController.createResult);
 
 router
