@@ -56,37 +56,32 @@ app.get('/', (req, res) => {
 });
 
 app.post('/js', async (req, res) => {
-  const id = makeid(20);
-  fs.writeFile(`./JSCodes/${id}.js`, req.body.code, async (err) => {
-    try {
-      const test = await Test.findById(req.body.testId);
-      const func = require(`./JSCodes/${id}`);
-      const testCase = test.Question.find((ele) => {
-        return ele._id.toHexString() === req.body.questionId;
-      }).testcases.reduce((t, c) => {
-        return [...t, c.input];
-      }, []);
-      const CorrectResults = test.Question.find((ele) => {
-        return ele._id.toHexString() === req.body.questionId;
-      }).testcases.reduce((t, c) => {
-        return [...t, c.output];
-      }, []);
-      const userResults = CorrectResults.map((e, i) => {
-        if (func(testCase[i]) == e) return true;
-        return false;
-      });
-      fs.unlink(`./JSCodes/${id}.js`, () => {});
-      res.status(200).json({
-        message: 'Evaluation Done!',
-        data: userResults,
-      });
-    } catch (e) {
-      fs.unlink(`./JSCodes/${id}.js`, () => {});
-      res.status(500).json({
-        message: 'Time Limit Exced or Code having syntax error '+e,
-      });
-    }
-  });
+  try {
+    const test = await Test.findById(req.body.testId);
+    const func = eval(`(${req.body.code})`);
+    const testCase = test.Question.find((ele) => {
+      return ele._id.toHexString() === req.body.questionId;
+    }).testcases.reduce((t, c) => {
+      return [...t, c.input];
+    }, []);
+    const CorrectResults = test.Question.find((ele) => {
+      return ele._id.toHexString() === req.body.questionId;
+    }).testcases.reduce((t, c) => {
+      return [...t, c.output];
+    }, []);
+    const userResults = CorrectResults.map((e, i) => {
+      if (func(testCase[i]) == e) return true;
+      return false;
+    });
+    res.status(200).json({
+      message: 'Evaluation Done!',
+      data: userResults,
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: 'Time Limit Exced or Code having syntax error',
+    });
+  }
 });
 
 app.use('/api/questions', questionRouter);
