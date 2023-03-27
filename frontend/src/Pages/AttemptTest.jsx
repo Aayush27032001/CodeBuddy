@@ -1,4 +1,4 @@
-import { Box, Tab, Tabs } from "@mui/material";
+import { Box, CircularProgress, Tab, Tabs } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CodeEditor from "../Components/CodeEditor/CodeEditor";
@@ -53,6 +53,7 @@ const QuestionViewer = React.memo(function QuestionViewer({ question }){
 });
 
 const AttemptTest = () => {
+  const [loading, setLoading] = useState(true);
   const [test, setTest] = useState();
   const [value, setValue] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState();
@@ -72,14 +73,16 @@ const AttemptTest = () => {
       navigate("/");
     } else {
       setTest(res.data.test);
-      console.log(res.data.test.duration);
-      console.log(!!localStorage.getItem("timeout"));
+      if(isNaN(localStorage.getItem("timeout"))){
+        localStorage.setItem("timeout", res.data.test.duration);
+      }
       if (!!!localStorage.getItem("timeout")) {
         localStorage.setItem("timeout", res.data.test.duration);
       }
       setTimeRemaining(
         parseInt(localStorage.getItem("timeout")) ?? res.data.test.duration
       );
+      setLoading(false);
     }
   };
 
@@ -98,7 +101,11 @@ const AttemptTest = () => {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  console.log("render");
+  if(loading){
+    return <Box sx={{width: "100vw", height: "100vh", display:"flex", justifyContent: "center", alignItems: "center"}}>
+      <CircularProgress sx={{mr:"1rem"}}/> Loading...
+    </Box>
+  }
   return (
     <FullscreenWrapper timeout={0}>
       <DisableDevTools>

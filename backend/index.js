@@ -32,6 +32,38 @@ function makeid(length) {
   return result;
 }
 
+const evaluateCode = async (req,res) => {
+  try {
+    const test = await Test.findById(req.body.testId);
+    const func = eval(`(${req.body.code})`);
+    const testCase = test.Question.find((ele) => {
+      return ele._id.toHexString() === req.body.questionId;
+    }).testcases.reduce((t, c) => {
+      return [...t, c.input];
+    }, []);
+    const CorrectResults = test.Question.find((ele) => {
+      return ele._id.toHexString() === req.body.questionId;
+    }).testcases.reduce((t, c) => {
+      return [...t, c.output];
+    }, []);
+    const userResults = CorrectResults.map((e, i) => {
+      if (func(testCase[i]) == e) return true;
+      return false;
+    });
+    if(!res){
+      return userResults;
+    }
+    res.status(200).json({
+      message: 'Evaluation Done!',
+      data: userResults,
+    });
+  } catch (e) {
+    res.status(500).json({
+      message: 'Time Limit Exced or Code having syntax error',
+    });
+  }
+}
+
 // Limit requests from same IP
 const limiter = rateLimit({
   max: 1000,
@@ -56,32 +88,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/js', async (req, res) => {
-  try {
-    const test = await Test.findById(req.body.testId);
-    const func = eval(`(${req.body.code})`);
-    const testCase = test.Question.find((ele) => {
-      return ele._id.toHexString() === req.body.questionId;
-    }).testcases.reduce((t, c) => {
-      return [...t, c.input];
-    }, []);
-    const CorrectResults = test.Question.find((ele) => {
-      return ele._id.toHexString() === req.body.questionId;
-    }).testcases.reduce((t, c) => {
-      return [...t, c.output];
-    }, []);
-    const userResults = CorrectResults.map((e, i) => {
-      if (func(testCase[i]) == e) return true;
-      return false;
-    });
-    res.status(200).json({
-      message: 'Evaluation Done!',
-      data: userResults,
-    });
-  } catch (e) {
-    res.status(500).json({
-      message: 'Time Limit Exced or Code having syntax error',
-    });
-  }
+  await evaluateCode(req,res);
 });
 
 app.use('/api/questions', questionRouter);

@@ -13,7 +13,8 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DataGrid from "../Components/common/DataDrid";
 const CreateTest = () => {
-  const QuestionForm = () => {
+  const [questions, setQuestions] = useState([{id:0}]);
+  const QuestionForm = ({id}) => {
     const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -32,9 +33,6 @@ const CreateTest = () => {
 
     return (
       <Box m={2}>
-        <Typography variant="h5" gutterBottom>
-          Question Form
-        </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField fullWidth label="Name" />
@@ -58,6 +56,9 @@ const CreateTest = () => {
               >
                 Add Test Cases
               </Button>
+              <Button disabled={!id} sx={{ml:"1rem"}} onClick={()=>{setQuestions(prev=>[...prev.filter(e=>e.id!==id)])}} variant="contained" color="error">
+                Delete
+              </Button>
             </Box>
           </Grid>
         </Grid>
@@ -77,9 +78,25 @@ const CreateTest = () => {
       </Box>
     );
   };
+  const handleAddQuestion = () => {
+    setQuestions((prev)=>{
+      if(prev.length===0){
+        return [{id:0}]
+      }
+      return [...prev,{id:prev[prev.length-1]?.id+1}]
+    })
+  }
   return (
     <div>
-      <QuestionForm />
+      <Typography variant="h5" gutterBottom>
+        Question Form
+      </Typography>
+      <Button variant="contained" color="primary" onClick={handleAddQuestion}>
+        Add Question
+      </Button>
+      {questions.map((question)=>{
+        return <QuestionForm id={question.id}/>
+      })}
     </div>
   );
 };
