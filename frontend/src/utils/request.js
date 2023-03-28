@@ -1,4 +1,4 @@
-export async function get(route = "", { params } = {}) {
+export async function get(route = "", { params } = {}, token) {
   const url = new URL(route, process.env.REACT_APP_BACKEND_URL);
 
   if (params) {
@@ -9,6 +9,7 @@ export async function get(route = "", { params } = {}) {
 
   return fetch(url, {
     method: "GET",
+    headers: token ? {Authorization: `Bearer ${token}`} : {}
   })
     .then(async (response) => ({
       ...(await response.json()),

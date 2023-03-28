@@ -20,7 +20,7 @@ function convertSecondsToHMS(seconds) {
   };
 }
 
-const QuestionViewer = React.memo(function QuestionViewer({ question }){
+const QuestionViewer = React.memo(function QuestionViewer({ question }) {
   console.log("render1");
   return (
     <Box p={"1rem"}>
@@ -73,7 +73,7 @@ const AttemptTest = () => {
       navigate("/");
     } else {
       setTest(res.data.test);
-      if(isNaN(localStorage.getItem("timeout"))){
+      if (isNaN(localStorage.getItem("timeout"))) {
         localStorage.setItem("timeout", res.data.test.duration);
       }
       if (!!!localStorage.getItem("timeout")) {
@@ -99,16 +99,26 @@ const AttemptTest = () => {
       clearInterval(interval);
       localStorage.clear();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  if(loading){
-    return <Box sx={{width: "100vw", height: "100vh", display:"flex", justifyContent: "center", alignItems: "center"}}>
-      <CircularProgress sx={{mr:"1rem"}}/> Loading...
-    </Box>
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress sx={{ mr: "1rem" }} /> Loading...
+      </Box>
+    );
   }
   return (
-    <FullscreenWrapper timeout={0}>
-      <DisableDevTools>
+    <DisableDevTools>
+      <FullscreenWrapper>
         <div className={styles.testContainer}>
           <Box
             display={"flex"}
@@ -146,8 +156,8 @@ const AttemptTest = () => {
             right={<CodeEditor question={test?.Question[value]} />}
           />
         </div>
-      </DisableDevTools>
-    </FullscreenWrapper>
+      </FullscreenWrapper>
+    </DisableDevTools>
   );
 };
 

@@ -4,7 +4,8 @@ import { javascript, esLint } from "@codemirror/lang-javascript";
 import { post } from "../../utils/request";
 import { lintGutter, linter } from "@codemirror/lint";
 import Linter from "eslint4b-prebuilt";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
+import { toast } from "react-toastify";
 const esLintConfigs = {
   env: { es6: true },
   rules: { "no-unused-vars": "off" },
@@ -23,7 +24,7 @@ const CodeEditor = ({ question }) => {
       questionId: question?._id,
     });
     if (!res) {
-      alert("Your Code Harmed our server there may be infinte loops!");
+      toast("Your Code Harmed our server there may be infinte loops!",{type:"error", position:"top-right"});
       setLoading(false);
       setResults([]);
     }
@@ -33,7 +34,7 @@ const CodeEditor = ({ question }) => {
     } else {
       setLoading(false);
       setResults([]);
-      alert(res.message);
+      toast(res.message,{type:"error", position:"top-right"});
     }
   };
 
@@ -61,35 +62,38 @@ const CodeEditor = ({ question }) => {
           setCode(val);
         }}
       />
-      <div>
+      <Box sx={{height:"25vh", overflow:"auto"}}>
         {!loading &&
           results?.map((e, i) => {
             return (
-              <p>
+              <Typography sx={{m:"0.25rem", background: e ? "rgba(221,255,221,1.00)" : "#f9c9c9", p: "1rem", borderRadius:"8px"}}>
                 {`Test Case ${i + 1}: `}
                 {e === true ? "Passed" : "Failed"}
-              </p>
+              </Typography>
             );
           })}
-      </div>
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 0,
-          width: "100%",
-          background: "#f5f5f5",
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
-        <Button
-          onClick={submitHandler}
-          disabled={loading}
-          variant="contained"
-          color="error"
+      </Box>
+      <Box>
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 0,
+            width: "100%",
+            background: "#f5f5f5",
+            display: "flex",
+            height: "4vh",
+            justifyContent: "flex-end",
+          }}
         >
-          Run Test
-        </Button>
+          <Button
+            onClick={submitHandler}
+            disabled={loading}
+            variant="contained"
+            color="error"
+          >
+            Run Test
+          </Button>
+        </Box>
       </Box>
     </div>
   );
