@@ -101,61 +101,60 @@ const AttemptTest = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          width: "100vw",
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <CircularProgress sx={{ mr: "1rem" }} /> Loading...
-      </Box>
-    );
-  }
   return (
     <DisableDevTools>
       <FullscreenWrapper>
-        <div className={styles.testContainer}>
+        {loading ? (
           <Box
-            display={"flex"}
-            background="#1e1e1e"
-            justifyContent="space-between"
+            sx={{
+              width: "100vw",
+              height: "100vh",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              aria-label="scrollable auto tabs example"
-            >
-              {test?.Question?.map((_, i) => {
-                return <Tab label={`Question ${i + 1}`} key={i} />;
-              })}
-            </Tabs>
-            <Box
-              sx={{
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                pr: "1rem",
-                fontSize: "1.2rem",
-              }}
-            >
-              Time Remaining:{" "}
-              {`${convertSecondsToHMS(timeRemaining).hours}:${
-                convertSecondsToHMS(timeRemaining).minutes
-              }:${convertSecondsToHMS(timeRemaining).seconds}`}
-            </Box>
+            <CircularProgress sx={{ mr: "1rem" }} /> Loading...
           </Box>
-          <Layout
-            left={<QuestionViewer question={test?.Question[value]} />}
-            right={<CodeEditor question={test?.Question[value]} />}
-          />
-        </div>
+        ) : (
+          <div className={styles.testContainer}>
+            <Box
+              display={"flex"}
+              background="#1e1e1e"
+              justifyContent="space-between"
+            >
+              <Tabs
+                value={value}
+                onChange={handleChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                aria-label="scrollable auto tabs example"
+              >
+                {test?.Question?.map((_, i) => {
+                  return <Tab label={`Question ${i + 1}`} key={i} />;
+                })}
+              </Tabs>
+              <Box
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  pr: "1rem",
+                  fontSize: "1.2rem",
+                }}
+              >
+                Time Remaining:{" "}
+                {`${convertSecondsToHMS(timeRemaining).hours}:${
+                  convertSecondsToHMS(timeRemaining).minutes
+                }:${convertSecondsToHMS(timeRemaining).seconds}`}
+              </Box>
+            </Box>
+            <Layout
+              left={<QuestionViewer question={test?.Question[value]} />}
+              right={<CodeEditor question={test?.Question[value]} />}
+            />
+          </div>
+        )}
       </FullscreenWrapper>
     </DisableDevTools>
   );
