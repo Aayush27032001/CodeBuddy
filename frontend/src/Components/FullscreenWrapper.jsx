@@ -10,12 +10,13 @@ function FullscreenWrapper({ children }) {
   useEffect(()=>{
     const handleFullScreen = () => {
       // eslint-disable-next-line no-restricted-globals
-      if(screen.height === window.innerHeight){
+      if(window.screen.height === window.innerHeight){
         setIsFullScreen(true);
       }else{
         setIsFullScreen(false);
       }
     }
+    handleFullScreen();
     window.addEventListener("resize",handleFullScreen);
     return ()=>{
       window.removeEventListener("resize",handleFullScreen);
@@ -24,7 +25,6 @@ function FullscreenWrapper({ children }) {
   const toggleFullScreen = () => {
     const element = document.documentElement;
     if (element.requestFullscreen) {
-      console.log("here");
       element.requestFullscreen();
       setIsFullScreen(true);
     }

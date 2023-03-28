@@ -13,6 +13,7 @@ const TestForm = () => {
   const [email, setEmail] = useState("");
   const submitHandler = (e) => {
     e.preventDefault();
+    localStorage.setItem("user", JSON.stringify({name, email}))
     localStorage.setItem("testCode", testCode);
     navigate("/code");
   };

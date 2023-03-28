@@ -1,13 +1,34 @@
-import { Box, CircularProgress, Tab, Tabs } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  Tab,
+  Tabs,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CodeEditor from "../Components/CodeEditor/CodeEditor";
 import DisableDevTools from "../Components/DisableDevTools";
 import FullscreenWrapper from "../Components/FullscreenWrapper";
 import Layout from "../Components/Layout/Layout";
-import { get } from "../utils/request";
+import { get, post } from "../utils/request";
 import styles from "./AttemptTest.module.scss";
-
+function deleteLocalStorageItemsExcept(keysToKeep) {
+  // Get all keys currently in localStorage
+  const allKeys = Object.keys(localStorage);
+  
+  // Loop through all keys and delete any that aren't in keysToKeep
+  for (let i = 0; i < allKeys.length; i++) {
+    const key = allKeys[i];
+    
+    if (!keysToKeep.includes(key)) {
+      localStorage.removeItem(key);
+    }
+  }
+}
 function convertSecondsToHMS(seconds) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -21,7 +42,6 @@ function convertSecondsToHMS(seconds) {
 }
 
 const QuestionViewer = React.memo(function QuestionViewer({ question }) {
-  console.log("render1");
   return (
     <Box p={"1rem"}>
       <Box
@@ -57,6 +77,7 @@ const AttemptTest = () => {
   const [test, setTest] = useState();
   const [value, setValue] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState();
+  const [confirmTestSubmission, setConfirmTestSubmission] = useState(false);
 
   const navigate = useNavigate();
 
@@ -68,7 +89,6 @@ const AttemptTest = () => {
       navigate("/");
     }
     const res = await get(`tests/${localStorage.getItem("testCode")}`);
-    console.log(res);
     if (res.status !== 200) {
       navigate("/");
     } else {
@@ -82,8 +102,22 @@ const AttemptTest = () => {
       setTimeRemaining(
         parseInt(localStorage.getItem("timeout")) ?? res.data.test.duration
       );
+      res?.data?.test?.Question?.forEach((q) => {
+        localStorage.setItem(
+          q?._id,
+          "module.exports = function(input) {\n  //Your code goes here\n\n}"
+        );
+      });
       setLoading(false);
     }
+  };
+
+  const submitTestHandler = async () => {
+    const codePayload = test.Question.map((c)=>{
+      return { questionID : c._id, code : localStorage.getItem(c._id)}
+    },{})
+    const resp = await post('/submit/test',{user: JSON.parse(localStorage.getItem("user")), code:codePayload, testID: localStorage.getItem("testCode")});
+    console.log(resp);
   };
 
   useEffect(() => {
@@ -97,7 +131,7 @@ const AttemptTest = () => {
     }, 1000);
     return () => {
       clearInterval(interval);
-      localStorage.clear();
+      deleteLocalStorageItemsExcept(["timeout"])
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -134,19 +168,26 @@ const AttemptTest = () => {
                   return <Tab label={`Question ${i + 1}`} key={i} />;
                 })}
               </Tabs>
-              <Box
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  pr: "1rem",
-                  fontSize: "1.2rem",
-                }}
-              >
-                Time Remaining:{" "}
-                {`${convertSecondsToHMS(timeRemaining).hours}:${
-                  convertSecondsToHMS(timeRemaining).minutes
-                }:${convertSecondsToHMS(timeRemaining).seconds}`}
+              <Box display="flex" alignItems={"center"}>
+                <Box
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    pr: "1rem",
+                    fontSize: "1.2rem",
+                  }}
+                >
+                  Time Remaining:{" "}
+                  {`${convertSecondsToHMS(timeRemaining).hours}:${
+                    convertSecondsToHMS(timeRemaining).minutes
+                  }:${convertSecondsToHMS(timeRemaining).seconds}`}
+                </Box>
+                <Box pr="0.5rem">
+                  <Button variant="contained" onClick={()=>{setConfirmTestSubmission(true)}} color="success">
+                    Submit Test
+                  </Button>
+                </Box>
               </Box>
             </Box>
             <Layout
@@ -155,6 +196,23 @@ const AttemptTest = () => {
             />
           </div>
         )}
+        <Dialog open={confirmTestSubmission} onClose={() => {setConfirmTestSubmission(false)}}>
+          <DialogTitle>Confirm Your Test Submission</DialogTitle>
+          <DialogActions>
+            <Button
+              color="error"
+              onClick={() => {
+                setConfirmTestSubmission(false);
+              }}
+              variant="contained"
+            >
+              Cancel
+            </Button>
+            <Button color="success" onClick={submitTestHandler} variant="contained">
+              Submit
+            </Button>
+          </DialogActions>
+        </Dialog>
       </FullscreenWrapper>
     </DisableDevTools>
   );
