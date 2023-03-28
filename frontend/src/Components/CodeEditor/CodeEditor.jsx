@@ -66,7 +66,7 @@ const CodeEditor = ({ question }) => {
         {!loading &&
           results?.map((e, i) => {
             return (
-              <Typography sx={{m:"0.25rem", background: e ? "rgba(221,255,221,1.00)" : "#f9c9c9", p: "1rem", borderRadius:"8px"}}>
+              <Typography key={i} sx={{m:"0.25rem", background: e ? "rgba(221,255,221,1.00)" : "#f9c9c9", p: "1rem", borderRadius:"8px"}}>
                 {`Test Case ${i + 1}: `}
                 {e === true ? "Passed" : "Failed"}
               </Typography>

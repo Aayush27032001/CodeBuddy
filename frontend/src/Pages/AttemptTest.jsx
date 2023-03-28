@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import CodeEditor from "../Components/CodeEditor/CodeEditor";
 import DisableDevTools from "../Components/DisableDevTools";
 import FullscreenWrapper from "../Components/FullscreenWrapper";
@@ -19,11 +20,11 @@ import styles from "./AttemptTest.module.scss";
 function deleteLocalStorageItemsExcept(keysToKeep) {
   // Get all keys currently in localStorage
   const allKeys = Object.keys(localStorage);
-  
+
   // Loop through all keys and delete any that aren't in keysToKeep
   for (let i = 0; i < allKeys.length; i++) {
     const key = allKeys[i];
-    
+
     if (!keysToKeep.includes(key)) {
       localStorage.removeItem(key);
     }
@@ -78,6 +79,7 @@ const AttemptTest = () => {
   const [value, setValue] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState();
   const [confirmTestSubmission, setConfirmTestSubmission] = useState(false);
+  const [submittingTest, setSubmittingTest] = useState(false);
 
   const navigate = useNavigate();
 
@@ -108,18 +110,54 @@ const AttemptTest = () => {
           "module.exports = function(input) {\n  //Your code goes here\n\n}"
         );
       });
+      if (localStorage.getItem("prevTest") === res?.data?.test?._id) {
+        if (
+          !isNaN(localStorage.getItem("prevTimeout")) &&
+          !!localStorage.getItem("prevTimeout")
+        ) {
+          console.log(localStorage.getItem("prevEmail"),JSON.parse(localStorage.getItem("user") ?? "{'email':''}")?.email);
+          // eslint-disable-next-line eqeqeq
+          if(JSON.parse(localStorage.getItem("user") ?? "{'email':''}")?.email == localStorage.getItem("prevEmail") ){
+            setTimeRemaining(localStorage.getItem("prevTimeout"));
+            localStorage.setItem("timeout", localStorage.getItem("prevTimeout"));
+            setLoading(false);
+            return;
+          }
+        }
+      }
       setLoading(false);
     }
   };
 
   const submitTestHandler = async () => {
-    const codePayload = test.Question.map((c)=>{
-      return { questionID : c._id, code : localStorage.getItem(c._id)}
-    },{})
-    const resp = await post('/submit/test',{user: JSON.parse(localStorage.getItem("user")), code:codePayload, testID: localStorage.getItem("testCode")});
-    console.log(resp);
+    setSubmittingTest(true);
+    const codePayload = test.Question.map((c) => {
+      return { questionID: c._id, code: localStorage.getItem(c._id) };
+    }, {});
+    const resp = await post("/submit/test", {
+      user: JSON.parse(localStorage.getItem("user")),
+      code: codePayload,
+      testID: localStorage.getItem("testCode"),
+    });
+    if (resp.ok) {
+      toast(resp.message, { type: "success", position: "top-right" });
+      navigate("/");
+    } else {
+      toast(resp.message, { type: "error", position: "top-right" });
+    }
+    let timer;
+    timer = setTimeout(() => {
+      setSubmittingTest(false);
+      clearTimeout(timer);
+    }, 3000);
   };
-
+  useEffect(() => {
+    if (timeRemaining < 0) {
+      submitTestHandler();
+      navigate("/");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeRemaining]);
   useEffect(() => {
     fetchTest();
     const interval = setInterval(() => {
@@ -130,8 +168,11 @@ const AttemptTest = () => {
       // console.log(timeRemaining);
     }, 1000);
     return () => {
+      localStorage.setItem("prevTimeout", localStorage.getItem("timeout"));
+      localStorage.setItem("prevTest", localStorage.getItem("testCode"));
+      localStorage.setItem("prevEmail", JSON.parse(localStorage.getItem("user")).email);
       clearInterval(interval);
-      deleteLocalStorageItemsExcept(["timeout"])
+      deleteLocalStorageItemsExcept(["token", "prevTimeout", "prevTest", "prevEmail"]);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -184,7 +225,13 @@ const AttemptTest = () => {
                   }:${convertSecondsToHMS(timeRemaining).seconds}`}
                 </Box>
                 <Box pr="0.5rem">
-                  <Button variant="contained" onClick={()=>{setConfirmTestSubmission(true)}} color="success">
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setConfirmTestSubmission(true);
+                    }}
+                    color="success"
+                  >
                     Submit Test
                   </Button>
                 </Box>
@@ -196,7 +243,12 @@ const AttemptTest = () => {
             />
           </div>
         )}
-        <Dialog open={confirmTestSubmission} onClose={() => {setConfirmTestSubmission(false)}}>
+        <Dialog
+          open={confirmTestSubmission}
+          onClose={() => {
+            setConfirmTestSubmission(false);
+          }}
+        >
           <DialogTitle>Confirm Your Test Submission</DialogTitle>
           <DialogActions>
             <Button
@@ -204,11 +256,24 @@ const AttemptTest = () => {
               onClick={() => {
                 setConfirmTestSubmission(false);
               }}
+              disabled={submittingTest}
               variant="contained"
             >
               Cancel
             </Button>
-            <Button color="success" onClick={submitTestHandler} variant="contained">
+            <Button
+              color="success"
+              onClick={submitTestHandler}
+              variant="contained"
+              disabled={submittingTest}
+            >
+              {submittingTest && (
+                <CircularProgress
+                  color="inherit"
+                  size={24}
+                  sx={{ mr: "0.5rem" }}
+                />
+              )}{" "}
               Submit
             </Button>
           </DialogActions>

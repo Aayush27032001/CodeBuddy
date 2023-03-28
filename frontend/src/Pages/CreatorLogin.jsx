@@ -7,7 +7,6 @@ const SignUp = ({ setisLogin }) => {
   const [form, setform] = useState();
   const submitHandler = async (e) => {
     e.preventDefault();
-    console.log(form);
     const resp = await post("/users/signup", form);
     if (resp.ok) {
       localStorage.setItem("token", resp.token);

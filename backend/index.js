@@ -83,6 +83,18 @@ app.post('/js', async (req, res, next) => {
 app.post(
   '/submit/test',
   catchAsync(async (req, res) => {
+    const candidate = await Result.findOne({
+      testID: req.body.testID,
+      'candidate.email': req.body.user.email,
+    });
+
+    if (candidate) {
+      res.status(400).json({
+        status: 'fail',
+        message: 'You have already submitted the test',
+      });
+      return;
+    }
     const result = req.body.code.map(async (code) => {
       return await evaluateCode({
         body: {
@@ -96,19 +108,6 @@ app.post(
     await Promise.all(result).then((values) => {
       evaluatedResult = values;
     });
-
-    const candidate = await Result.findOne({
-      testID: req.body.testID,
-      'candidate.email': req.body.user.email,
-    });
-
-    if (candidate) {
-      res.status(400).json({
-        status: 'fail',
-        message: 'You have already submitted the test',
-      });
-      return;
-    }
     let userResult = req.body.user;
     let correctAns = 0;
     evaluatedResult.forEach((each) => {
@@ -125,7 +124,7 @@ app.post(
     );
     res.status(200).json({
       status: 'success',
-      message: 'result added successfully',
+      message: 'Your Test Submitted Successfully',
       data: {
         newResult,
       },
