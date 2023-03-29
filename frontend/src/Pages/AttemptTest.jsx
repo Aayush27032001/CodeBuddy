@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogActions,
   DialogTitle,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -44,7 +45,7 @@ function convertSecondsToHMS(seconds) {
 
 const QuestionViewer = React.memo(function QuestionViewer({ question }) {
   return (
-    <Box p={"1rem"}>
+    <Box p={"1rem"} height="100vh" overflow="auto">
       <Box
         sx={{
           background: "#ddd",
@@ -55,20 +56,52 @@ const QuestionViewer = React.memo(function QuestionViewer({ question }) {
           fontWeight: "500",
         }}
       >
-        {question?.name}
+        <Typography variant="body1" color="initial" fontWeight={700} fontSize={"18px"}>Question:</Typography>
+        <Typography variant="body1" color="initial" fontSize={"16px"}>{question?.name}</Typography>
       </Box>
       <Box
         sx={{
           background: "#ddd",
           p: "1rem",
+          my: "1rem",
           borderRadius: "8px",
           textAlign: "justify",
           fontSize: "1.125rem",
           fontWeight: "500",
         }}
       >
-        {question?.statement}
+        <Typography variant="body1" color="initial" fontWeight={700}>Statement:</Typography>
+        <Typography variant="body1" color="initial" fontSize={"14px"}>{question?.statement}</Typography>
       </Box>
+      {question.testcases.map((testcase, i) => {
+        if (i > 1) {
+          return null;
+        }
+        return (
+          <Box
+            key={i}
+            sx={{
+              background: "#ddd",
+              p: "1rem",
+              my: "1rem",
+              borderRadius: "8px",
+              textAlign: "justify",
+              fontSize: "1.125rem",
+              fontWeight: "500",
+            }}
+          >
+            <Typography variant="body1" fontWeight={700} color="initial">
+              Example: {i + 1}
+            </Typography>
+            <Typography variant="body1" color="initial">
+              Input: {Array.isArray(testcase?.input) ? `[ ${testcase?.input?.join(" , ")} ]` : JSON.stringify(testcase?.input)}
+            </Typography>
+            <Typography variant="body1" color="initial">
+              Output: {testcase?.output?.[0]}
+            </Typography>
+          </Box>
+        );
+      })}
     </Box>
   );
 });
@@ -115,11 +148,20 @@ const AttemptTest = () => {
           !isNaN(localStorage.getItem("prevTimeout")) &&
           !!localStorage.getItem("prevTimeout")
         ) {
-          console.log(localStorage.getItem("prevEmail"),JSON.parse(localStorage.getItem("user") ?? "{'email':''}")?.email);
-          // eslint-disable-next-line eqeqeq
-          if(JSON.parse(localStorage.getItem("user") ?? "{'email':''}")?.email == localStorage.getItem("prevEmail") ){
+          console.log(
+            localStorage.getItem("prevEmail"),
+            JSON.parse(localStorage.getItem("user") ?? "{'email':''}")?.email
+          );
+          if (
+            // eslint-disable-next-line eqeqeq
+            JSON.parse(localStorage.getItem("user") ?? "{'email':''}")?.email ==
+            localStorage.getItem("prevEmail")
+          ) {
             setTimeRemaining(localStorage.getItem("prevTimeout"));
-            localStorage.setItem("timeout", localStorage.getItem("prevTimeout"));
+            localStorage.setItem(
+              "timeout",
+              localStorage.getItem("prevTimeout")
+            );
             setLoading(false);
             return;
           }
@@ -170,9 +212,17 @@ const AttemptTest = () => {
     return () => {
       localStorage.setItem("prevTimeout", localStorage.getItem("timeout"));
       localStorage.setItem("prevTest", localStorage.getItem("testCode"));
-      localStorage.setItem("prevEmail", JSON.parse(localStorage.getItem("user")).email);
+      localStorage.setItem(
+        "prevEmail",
+        JSON.parse(localStorage.getItem("user")).email
+      );
       clearInterval(interval);
-      deleteLocalStorageItemsExcept(["token", "prevTimeout", "prevTest", "prevEmail"]);
+      deleteLocalStorageItemsExcept([
+        "token",
+        "prevTimeout",
+        "prevTest",
+        "prevEmail",
+      ]);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

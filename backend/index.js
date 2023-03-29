@@ -31,7 +31,13 @@ const evaluateCode = async (req, res) => {
     const testCase = test.Question.find((ele) => {
       return ele._id.toHexString() === req.body.questionId;
     }).testcases.reduce((t, c) => {
-      return [...t, c.input];
+      return [...t, c.input.map(a=>{
+        if(isNaN(parseFloat(a))){
+          return a
+        }else{
+          return parseFloat(a);
+        }
+      })];
     }, []);
     const CorrectResults = test.Question.find((ele) => {
       return ele._id.toHexString() === req.body.questionId;

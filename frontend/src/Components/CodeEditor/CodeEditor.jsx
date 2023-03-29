@@ -42,6 +42,7 @@ const CodeEditor = ({ question }) => {
     if (localStorage.getItem(question?._id)) {
       setCode(localStorage.getItem(question?._id));
     }
+    setResults([]);
   }, [question?._id]);
   useEffect(() => {
     localStorage.setItem(question?._id, code);
@@ -52,7 +53,7 @@ const CodeEditor = ({ question }) => {
       <ReactCodeMirror
         value={code}
         theme="light"
-        height="65vh"
+        height="60vh"
         extensions={[
           javascript(),
           linter(esLint(new Linter(), esLintConfigs)),
@@ -62,7 +63,7 @@ const CodeEditor = ({ question }) => {
           setCode(val);
         }}
       />
-      <Box sx={{height:"25vh", overflow:"auto"}}>
+      <Box sx={{height:"30vh", overflow:"auto"}}>
         {!loading &&
           results?.map((e, i) => {
             return (
