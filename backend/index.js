@@ -23,11 +23,14 @@ app.use(cors());
 
 // Set security HTTP headers
 app.use(helmet());
-
+function removeSpecialEscapeSequences(str) {
+  str = str.replaceAll("&lt;", '<');
+  return str;
+}
 const evaluateCode = async (req, res) => {
   try {
     const test = await Test.findById(req.body.testId);
-    const func = eval(`(${req.body.code})`);
+    const func = eval(`(${removeSpecialEscapeSequences(req.body.code)})`);
     const testCase = test.Question.find((ele) => {
       return ele._id.toHexString() === req.body.questionId;
     }).testcases.reduce((t, c) => {
