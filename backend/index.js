@@ -30,7 +30,7 @@ function removeSpecialEscapeSequences(str) {
 const evaluateCode = async (req, res) => {
   try {
     const test = await Test.findById(req.body.testId);
-    const func = eval(`(${removeSpecialEscapeSequences(req.body.code)})`);
+    const func = eval(removeSpecialEscapeSequences(req.body.code));
     const testCase = test.Question.find((ele) => {
       return ele._id.toHexString() === req.body.questionId;
     }).testcases.reduce((t, c) => {
@@ -58,14 +58,25 @@ const evaluateCode = async (req, res) => {
       message: 'Evaluation Done!',
       data: userResults,
     });
-  } catch (e) {
+  } catch (err) {
+    let errorMessage = '';
+    if (err instanceof SyntaxError) {
+      errorMessage = 'Syntax Error: Please check your code syntax and try again.';
+    } else if (err instanceof TypeError) {
+      errorMessage = 'Type Error: Please check the parameters passed to the function and try again.';
+    } else if (err.message && err.message.includes('timed out')) {
+      errorMessage = 'Time Limit Exceeded: The code took too long to run.';
+    } else {
+      errorMessage = 'An unknown error occurred. Please try again later.';
+    }
     if (res) {
       res.status(500).json({
-        message: 'Time Limit Exced or Code having syntax error',
+        message: errorMessage,
       });
     }
   }
 };
+
 
 // Limit requests from same IP
 const limiter = rateLimit({
