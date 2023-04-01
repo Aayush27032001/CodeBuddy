@@ -63,11 +63,11 @@ const evaluateCode = async (req, res) => {
     if (err instanceof SyntaxError) {
       errorMessage = 'Syntax Error: Please check your code syntax and try again.';
     } else if (err instanceof TypeError) {
-      errorMessage = 'Type Error: Please check the parameters passed to the function and try again.';
+      errorMessage = 'Syntax Error: Please check your code syntax and try again.';
     } else if (err.message && err.message.includes('timed out')) {
-      errorMessage = 'Time Limit Exceeded: The code took too long to run.';
+      errorMessage = 'Syntax Error: Please check your code syntax and try again.';
     } else {
-      errorMessage = 'An unknown error occurred. Please try again later.';
+      errorMessage = 'Syntax Error: Please check your code syntax and try again.';
     }
     if (res) {
       res.status(500).json({
