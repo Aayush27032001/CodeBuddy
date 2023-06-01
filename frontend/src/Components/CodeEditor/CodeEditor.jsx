@@ -13,12 +13,20 @@ const esLintConfigs = {
 };
 
 const CodeEditor = ({ question }) => {
-  const [code, setCode] = useState(() =>
+  const [code, setCode] = useState(
     localStorage.getItem(question?._id) ||
       "module.exports = function(input) {\n  //Your code goes here\n\n}"
   );
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    setCode(
+      localStorage.getItem(question?._id) ||
+        "module.exports = function(input) {\n  //Your code goes here\n\n}"
+    );
+    setResults([])
+  }, [question?._id]);
 
   const submitHandler = async () => {
     setLoading(true);
@@ -38,7 +46,7 @@ const CodeEditor = ({ question }) => {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     localStorage.setItem(question?._id, code);
   }, [code, question?._id]);
